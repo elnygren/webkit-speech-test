@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Konecranes "Moneypenny"</title>
+    <link rel="stylesheet" href="materialize.min.css">
+    <script src="jquery.min.js"></script>
+    <script src="jquery-ui.min.js"></script>
+    <script src="fuse.min.js"></script>
+    <script src="materialize.min.js"></script>
+  </head>
+  <body>
+
+    <nav>
+      <div class="nav-wrapper" style="background-color:#ed1c24;text-align:center;">
+        <a class="brand-logo" style="position:relative;font-weight:bold;">KONECRANES IndustryHack DEMO</a>
+      </div>
+    </nav>
+
+    <div class="container">
+      <div class="row">
+        <div class="col s6 offset-s3">
+          <div class="card small" style="margin-top:50px;">
+            <div class="card-image">
+              <img src="bg.jpg" style="margin-top:-75px;">
+            </div>
+            <div class="card-content">
+              <h4 style="font-weight:bold;margin-top:-5px;">"Moneypenny"</h4>
+              <p>Voice controller/assistant action creation for Siebel allows safer, easier and faster filling of service package actions.</p>
+              <p id="startButton" style="color:#ed1c24;float:right;cursor:hand;cursor:pointer;">START DEMO</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div style="text-align:center;display:none;" id="moneypenny">
+      <h4 style="margin-bottom:-50px;color:#777;" id="question">Start talking to create new action.</h4>
+      <div class="preloader-wrapper big active">
+        <div class="spinner-layer spinner-red-only">
+          <div class="circle-clipper left">
+            <div class="circle"></div>
+          </div><div class="gap-patch">
+            <div class="circle"></div>
+          </div><div class="circle-clipper right">
+            <div class="circle"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="center">
+      <div id="div_language">
+        <select id="select_language" onchange="updateCountry()"></select>
+        &nbsp;&nbsp;
+        <select id="select_dialect"></select>
+      </div>
+    </div>
+
+    <br><br>
+
+    <button id="add">ADD</button>
+
+    <ul id="actions" style="width:80%;margin:auto;">
+    </ul>
+
+    <script>
+
+      $( document ).ready(function() {
+
+        var fault_codes = ['Broken', 'Worn', 'Leaking', 'Overheating', 'Noisy'];
+        var type_codes  = ['Adjust', 'Change', 'Visual assessment', 'Clean', 'Repair', 'Operational assessment'];
+
+        var options = {
+          caseSensitive   : false,
+          includeScore    : false,
+          shouldSort      : true,
+          threshold       : 0.6,
+          location        : 0,
+          distance        : 100,
+          maxPatternLength: 32,
+          keys: ["title","author.firstName"]
+        };
+        
+        $( "#startButton" ).click(function(event) {
+          $( "#moneypenny" ).fadeIn("slow");
+          startButton();
+        });
+
+        $( "#add" ).click(function(){
+          addAction(data);
+        });
+
+        function search(list, search){
+          var fuse = new Fuse(list, options);
+          return fuse.search(search);
+        }
+
+        function addAction(data){
+            $( "#actions" ).append('\
+              <li>\
+                <div>\
+                  <span style="color:#ed1c24">Date reported</span> <strong>06.09.2015 - 20:51 [MAINMAN planned maintenance]</strong>\
+                </div>\
+                <table style="width:100%;">\
+                  <tr>\
+                    <td style="font-size:.8em;text-transform:uppercase;padding: 5px 0px;">Product description</td>\
+                    <td style="font-size:.8em;text-transform:uppercase;padding: 5px 0px;">Type</td>\
+                    <td style="font-size:.8em;text-transform:uppercase;padding: 5px 0px;">Fault code</td>\
+                    <td style="font-size:.8em;text-transform:uppercase;padding: 5px 0px;">Risks</td>\
+                    <td style="font-size:.8em;text-transform:uppercase;padding: 5px 0px;">Recommendation</td>\
+                    <td style="font-size:.8em;text-transform:uppercase;padding: 5px 0px;">Next step</td>\
+                  </tr>\
+                  <tr>\
+                    <td style="padding: 0px 0px;font-weight:bold;">'+data.component+'</td>\
+                    <td style="padding: 0px 0px;font-weight:bold;">'+data.type+'</td>\
+                    <td style="padding: 0px 0px;font-weight:bold;">'+data.fault_code+'</td>\
+                    <td style="padding: 0px 0px;font-weight:bold;">Safety</td>\
+                    <td style="padding: 0px 0px;font-weight:bold;">Repair</td>\
+                    <td style="padding: 0px 0px;font-weight:bold;">-</td>\
+                  </tr>\
+                </table>\
+                <div>\
+                  <input type="text" class="browser-default" placeholder="Comments..." value="'+data.comment+'"/>\
+                </div>\
+            <li>\
+            <br>');
+            $( "#moneypenny" ).fadeOut("slow");
+        };
+
+        String.prototype.contains = function (it) {
+          return this.indexOf(it) != -1;
+        }
+
+        var data = {
+          'action'    : '',
+          'component' : '',
+          'type'      : '',
+          'fault_code': '',
+          'comment'   : ''
+        };
+
+        var langs =
+        [
+         ['English',['en-AU', 'Australia'],
+                    ['en-CA', 'Canada'],
+                    ['en-IN', 'India'],
+                    ['en-NZ', 'New Zealand'],
+                    ['en-ZA', 'South Africa'],
+                    ['en-GB', 'United Kingdom'],
+                    ['en-US', 'United States']],
+        ];
+
+        /* LANGUAGE */
+        function updateCountry() {
+          for (var i = select_dialect.options.length - 1; i >= 0; i--) {
+            select_dialect.remove(i);
+          }
+          var list = langs[select_language.selectedIndex];
+          for (var i = 1; i < list.length; i++) {
+            select_dialect.options.add(new Option(list[i][1], list[i][0]));
+          }
+          select_dialect.style.visibility = list[1].length == 1 ? 'hidden' : 'visible';
+        }
+
+        function language_selection() {
+          for (var i = 0; i < langs.length; i++) {
+            select_language.options[i] = new Option(langs[i][0], i);
+          }
+          select_language.selectedIndex = 0;
+          updateCountry();
+          select_dialect.selectedIndex = 6;
+          showInfo('info_start');
+        }
+        language_selection()
+
+
+        /* SETUP */
+        var final_transcript = '';
+        var recognizing = false;
+        var phase = 0;
+
+        var recognition = new webkitSpeechRecognition();
+        recognition.continuous = false;
+        recognition.interimResults = false;
+
+        recognition.onstart = function() { recognizing = true; showInfo('info_speak_now'); };
+        recognition.onerror = function(event) { console.log('ERROR', event); };
+
+        function stop_recognition() {
+          var msg = new SpeechSynthesisUtterance('ok, aborting report.');
+          window.speechSynthesis.speak(msg);
+
+          final_transcript = "";
+          //final_span.innerHTML = linebreak(final_transcript);
+          console.log("STOPPED");
+          phase = 0;  
+        }
+
+        function is_it_a_match(pattern, candidates) {
+          var returnable = null;
+          candidates.forEach(function (candidate) {
+            if (pattern.contains(candidate)) {
+              returnable = candidate;
+            }
+          });
+          return returnable;
+        }
+
+        recognition.onend = function() {
+          recognizing = false;
+          showInfo('');
+
+          /* PHASE 0: KEYWORD */
+          if (phase == 0) {
+            if (final_transcript.contains('fault')) {
+              data['action'] = 'fault';
+                    
+              var msg = new SpeechSynthesisUtterance('Ok. Which component has an issue ?');
+              window.speechSynthesis.speak(msg);
+              
+              var q = 'Ok. Which component has an issue ?';
+              question.innerHTML = linebreak(q);
+
+              phase += 1;
+              recognition.start();
+            } 
+            else if (final_transcript.contains('stop')) { stop_recognition() }
+            else {
+              console.log("hei")
+              var msg = new SpeechSynthesisUtterance('Please give a valid keyword, such as "fault"');
+              window.speechSynthesis.speak(msg);
+              //final_span.innerHTML = linebreak(final_transcript);
+              recognition.start()
+            }
+          }
+
+          /* PHASE 1: COMPONENT */
+          else if (phase == 1) {
+            if (final_transcript.contains('stop')) { stop_recognition() } 
+            else {
+
+              var msg = new SpeechSynthesisUtterance('Ok. What was the type of action when you found this issue?');
+              window.speechSynthesis.speak(msg);
+
+              data['component'] = final_transcript;
+              
+              var q = 'Ok. What was the type of action when you found this issue?';
+              question.innerHTML = linebreak(q);
+
+              phase += 1;
+              recognition.start();
+            }
+          }
+
+
+          /* PHASE 2: TYPE */
+          else if (phase == 2) {
+            var matched = is_it_a_match(final_transcript, ['adjust', 'change', 'visual assessment', 'clean', 'repair', 'operational assessment']);
+
+            if (final_transcript.contains('stop')) { stop_recognition() }
+            else if (final_transcript.contains('options') || !matched) {
+              var msg = new SpeechSynthesisUtterance(
+                'The options are: ' +
+                'adjust, ' +
+                'change, ' +
+                'visual assessment, ' +
+                'clean, ' +
+                'repair, ' +
+                'operational assessment'
+              );
+              msg.rate = 0.9;
+              window.speechSynthesis.speak(msg);
+              recognition.start()
+            }
+            else {
+              data['type'] = matched;
+              
+              var q = 'Which fault code?';
+              question.innerHTML = linebreak(q);
+
+              var msg = new SpeechSynthesisUtterance('Ok. Which fault code?');
+              window.speechSynthesis.speak(msg);
+
+              var q = 'Ok. Which fault code?';
+              question.innerHTML = linebreak(q);
+
+              phase += 1;
+              recognition.start();
+            }
+          }
+
+          /* PHASE 3: FAULT_CODE */
+          else if (phase == 3) {
+            var matched = is_it_a_match(final_transcript, ['broken', 'worn', 'leaking', 'overheating', 'noisy']);
+
+            if (final_transcript.contains('stop')) { stop_recognition() } 
+            if (final_transcript.contains('options') || !matched) {
+              var msg = new SpeechSynthesisUtterance(
+                'The options are: ' +
+                'broken, ' +
+                'worn, ' +
+                'leaking, ' +
+                'overheating, ' +
+                'noisy'
+              );
+              msg.rate = 0.9;
+              window.speechSynthesis.speak(msg);
+              recognition.start()
+            }
+            else {
+              data['fault_code'] = matched;      
+              final_transcript = '';
+              //final_span.innerHTML = '';
+              
+              var msg = new SpeechSynthesisUtterance('Ok. Do you have any additional comments ?');
+              window.speechSynthesis.speak(msg);
+
+              var q = 'Ok. Do you have any additional comments ?';
+              question.innerHTML = linebreak(q);
+
+              phase += 1;
+              recognition.start();
+            }
+          }
+
+          /* PHASE 4: FAULT_CODE */
+          else if (phase == 4) {
+            if (final_transcript.contains('stop')) { stop_recognition() } 
+            else {
+              data['comment'] = final_transcript      
+              final_transcript = '';
+              //final_span.innerHTML = '';
+
+              console.log(data)
+              
+              var msg = new SpeechSynthesisUtterance('Thank you for your report.');
+              window.speechSynthesis.speak(msg);
+
+              var q = 'Thank You';
+              question.innerHTML = linebreak(q);
+
+              addAction(data);
+              phase = 0;
+            }
+          }
+        };
+
+        recognition.onresult = function(event) {
+          final_transcript = '';
+
+          for (var i = event.resultIndex; i < event.results.length; ++i) {
+            if (event.results[i].isFinal) {
+              final_transcript += event.results[i][0].transcript;
+            } 
+          }  
+          console.log('TRANSCRIPT:', final_transcript)
+        };
+
+
+        var two_line = /\n\n/g;
+        var one_line = /\n/g;
+
+        function linebreak(s) {
+          return s.replace(two_line, '<p></p>').replace(one_line, '<br>');
+        }
+
+        function startButton(event) {
+          if (recognizing) {
+            recognition.stop();
+            return;
+          }
+          
+          final_transcript = '';
+          //final_span.innerHTML = '';
+
+          recognition.lang = select_dialect.value;
+          recognition.start();
+
+          showInfo('info_allow');
+        }
+
+        function showInfo(s) {
+          /*if (s) {
+            for (var child = info.firstChild; child; child = child.nextSibling) {
+              if (child.style) {
+                child.style.display = child.id == s ? 'inline' : 'none';
+              }
+            }
+            info.style.visibility = 'visible';
+          } else {
+            info.style.visibility = 'hidden';
+          }*/
+        }
+
+      });
+    </script>
+
+  </body>
+</html>
